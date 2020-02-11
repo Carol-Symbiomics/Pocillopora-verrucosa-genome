@@ -1,2 +1,2 @@
 # Pocillopora-verrucosa-genome
-Describes the scripts and codes to assemble the transcriptome and genome of Pocillopora verrucosa
+Describes the software code and scripts used to assemble the transcriptome and genome of Pocillopora verrucosa
