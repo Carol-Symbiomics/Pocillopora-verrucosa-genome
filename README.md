@@ -3,9 +3,9 @@
 This repository contains all the scripts used for the genome assembly, filtering and annotation of the cauliflower coral *Pocillopora verrucosa*. 
 The scripts for the transcriptome assembly and filtering of *Pocillopora verrucosa* are also available in this repository.
 
-![alt text] (/home/buitracn/Genomes/corals/Pocillopora.verrucosa/08_Pver_Code_Availability/P3098875.JPG)
+![alt text] (/home/buitracn/Genomes/corals/Pocillopora.verrucosa/08_Pver_Code_Availability/Pocillopora-verrucosa-genome/P.verrucosa_images/P3098875.JPG)
 
-![alt text] (/home/buitracn/Genomes/corals/Pocillopora.verrucosa/08_Pver_Code_Availability/P3098882.JPG)
+![alt text] (/home/buitracn/Genomes/corals/Pocillopora.verrucosa/08_Pver_Code_Availability/Pocillopora-verrucosa-genome/P.verrucosa_images/P3098882.JPG)
 
 ## Summary
 The global persistence of corals is currently threaten by climate change and ocean warming. In this context the genomic resources are invaluable as a foundation to study the adaptive potential and genetic distinctiveness of coral species. The cauliflower coral, *Pocillopora verrucosa*, is a widely spread reef-building coral with important ecological roles in the maintenance of reefs across the Red Sea, the Indian Ocean, and the Pacific Ocean. Here we provide a reference genome for the coral *P. verrucosa* from the Red Sea. The genome has an assembly size of 380,505,698 bp with a scaffold and contig N50 of 333,696 bp and 75,704 bp, respectively. A high percentage of the genome (41.2%) is comprised of repetitive elements. *Pocillopora verrucosa* genome features 27,529 gene models of which 90.27% have RNA-Seq evidence and about 97% have homology to genes in the SwissProt or TrEMBL curated databases.
