@@ -1,0 +1,124 @@
+#### hm.batchB3.haplomerger v1.50
+####
+#### This shell script does thre things:
+#### 1) to convert the net data into a form which can be recognized by haplomerger,
+#### 2) to find all linearized paths by using a graph-based algorithm,
+#### 3) to produce haplomic genome assemblies.
+
+#### setting variables
+name=$1								# the species_name or the prefix of the genome file name
+scoreScheme="score"	  # scoring scheme for HM_pathFinder_preparation.pl and HM_pathFinder.pl, can be "ali" and "score" (default=score)
+filterScore_1=20000		# score threshold to filter alignment blocks for HM_pathFinder_preparation.pl 
+											# (default is 20000 for "score", 200 for "ali")
+filterScore_2=200000 	# score threshold to filter alignment blocks for HM_pathFinder.pl 
+											# (default is 200000 for "score", 2000 for "ali")
+escapeFilter=50       # nodes that cover >N% of the scaffold length
+                      # can escape filtering (invocated by --filter) (def=50)  											
+breakingMode=2				# to break a potentially mis-joined scaffolds (for HM_pathFinder.pl),
+               				#   for each pair of mis-joined scaffolds, N can be 0,1,2 (default=2)
+               				#     0=no breaking,
+               				#     1=break one of the mis-joined scaffolds, try to preserve long contiguity,
+               				#     2=break both of the mis-joined scaffolds.
+NsLCsFilter=90        # filter alignments consisting of more than N% of Ns+lowcases (default=90%)               				
+aliFilter=5000000     # minimum score/ali_len required to determine a mis-join 
+                      # (default=5000000 for scoreScheme=score, default=50000 for scoreScheme=ali)
+overhangFilter=50000  # minimum length of the overhang tails required to determine a mis-join (default=50000bp)
+noSelfLoop=1          # def=1, delete self loops before graph traversing
+noStrandConflict=1    # def=1, delete strand conflicts before graph traversing                                    				
+minOverlap=0  				# the minimum alignment length required to connect two different scaffolds (default=0 bp)
+                      # To get an assembly free of haplotype switchs, set it to a large number like 999999999
+
+
+###################################################################################################
+#### running
+if [ $# -eq 0 ]
+	then
+		echo
+		echo "Species name or the prefix of your genome file name is required !"
+		echo ""
+		echo "USAGE: $0 species_name"
+		echo
+		echo "Note that your genome sequence file should be"
+		echo "gzip compressed fasta file called assembly_name.fa.gz ."
+		echo 
+		exit 1
+	elif [ ! -f $1.fa.gz ]
+	then
+		echo
+		echo "$1.fa.gz is not found !"
+		echo 
+		exit 1	
+fi
+
+#### print out output file names
+echo
+echo ">>> Running command : $0 $1"
+echo 
+echo "These files/directories are going to be output :"
+echo "from HM_pathFinder_preparation.pl :"
+echo "  $name.${name}x.result/hm.scaffolds - information of original scaffolds"
+echo "  $name.${name}x.result/hm.nodes - information of the alignment blocks (a block is a node)"
+echo "  $name.${name}x.result/hm.portions - information of the partions of original scaffolds"
+echo "from HM_pathFinder.pl :"
+echo "  *** $name.${name}x.result/hm.new_scaffolds - the solved relations between two haplotypic scaffolds"
+echo "  *** $name.${name}x.result/hm.assembly_errors - potential assembly errors in the original assembly"
+echo "  $name.${name}x.result/hm.unpaired - a list of the unpaired scaffolds"
+echo "from XHM_haploMerger.pl :"
+echo "  $name.${name}x.result/hm.connections - the alignment blocks connecting two different scaffolds"
+echo "  $name.${name}x.result/hm.unpaired_updated - an updated list of the unpaired scaffolds"
+echo "  $name.${name}x.result/assembly_hapA/B.fa.gz - original scaffold sequences separated for two haplotypes"
+echo "  *** $name.${name}x.result/optiNewScaffolds.fa.gz - new primary/reference haploid assembly"
+echo "  *** $name.${name}x.result/optiNewScaffolds_alt.fa.gz - new alternative haploid assembly"
+echo "  *** $name.${name}x.result/unpaired.fa.gz - sequences failed to be incorporated into new scaffolds"
+echo "log files:"
+echo "  _B3.pathFinder_preparation.log"
+echo "  _B3.pathFinder.log"
+echo "  _B3.haploMerger.log (include a list of the sizes of scaffolds from optiNewScaffolds.fa.gz)"
+echo 
+
+#### ===========================================================
+#### preparation - to convert the net infomation
+#### ===========================================================
+
+perl ../bin/HM_pathFinder_preparation.pl --Species $name ${name}x --Force --Delete \
+  --scoreScheme=$scoreScheme --filter=$filterScore_1 \
+  1>_B3.pathFinder_preparation.log 2>>_B3.pathFinder_preparation.log
+
+#### ===========================================================
+#### find the paths and detect misjoins
+#### ===========================================================
+
+perl ../bin/HM_pathFinder.pl --Species $name ${name}x --Force --Delete --scoreScheme=$scoreScheme --filter=$filterScore_2 \
+	--NsLCsFilter=$NsLCsFilter --noSelfLoop=$noSelfLoop --noStrandConflict=$noStrandConflict --breakingMode=$breakingMode \
+	--misjoin_aliFilter=$aliFilter --misjoin_overhangFilter=$overhangFilter --escapeFilter=$escapeFilter \
+	1>_B3.pathFinder.log 2>>_B3.pathFinder.log
+
+#### ===========================================================
+#### output haplomic assemblies
+#### ===========================================================
+
+perl ../bin/XHM_haploMerger.pl --Species $name ${name}x --Force --Delete  \
+  --selectLongHaplotype --minOverlap=$minOverlap  \
+  1>_B3.haploMerger.log 2>>_B3.haploMerger.log
+
+#### ===========================================================
+#### remove leading and trailing Ns from the scaffold sequences
+#### ===========================================================
+
+gunzip -c $name.${name}x.result/optiNewScaffolds.fa.gz \
+	| perl ../bin/faDnaPolishing.pl --legalizing --noLeadingN --removeShortSeq=500 2>_B3.faDnaPolishing.log \
+	| gzip -c > $name.${name}x.result/optiNewScaffolds_new.fa.gz
+gunzip -c $name.${name}x.result/optiNewScaffolds_alt.fa.gz \
+	| perl ../bin/faDnaPolishing.pl --legalizing --noLeadingN --removeShortSeq=500 2>>_B3.faDnaPolishing.log \
+	| gzip -c > $name.${name}x.result/optiNewScaffolds_alt_new.fa.gz
+gunzip -c $name.${name}x.result/unpaired.fa.gz \
+	| perl ../bin/faDnaPolishing.pl --legalizing --noLeadingN --removeShortSeq=500 2>>_B3.faDnaPolishing.log \
+	| gzip -c > $name.${name}x.result/unpaired_new.fa.gz
+	
+rm -f $name.${name}x.result/optiNewScaffolds.fa.gz  \
+  $name.${name}x.result/optiNewScaffolds_alt.fa.gz	\
+  $name.${name}x.result/unpaired.fa.gz
+
+mv $name.${name}x.result/optiNewScaffolds_new.fa.gz $name.${name}x.result/optiNewScaffolds.fa.gz
+mv $name.${name}x.result/optiNewScaffolds_alt_new.fa.gz $name.${name}x.result/optiNewScaffolds_alt.fa.gz
+mv $name.${name}x.result/unpaired_new.fa.gz $name.${name}x.result/unpaired.fa.gz

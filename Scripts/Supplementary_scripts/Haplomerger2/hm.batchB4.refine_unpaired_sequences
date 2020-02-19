@@ -1,0 +1,68 @@
+#### hm.batchB4.refine_unpaired_sequences v1.50
+####
+#### This shell script invocate HM_unincorpRefiner.pl.
+#### A large fraction of the unincoporated sequences (in unpaired.fa.gz) are actually redundant,
+#### either because they are mainly composed of Ns and repeats, or because they have allelic sequences 
+#### (in optiNewScaffolds.fa.gz) which are failed to be identify by the prevous programs.
+#### This script will find out these sequences and remove them from the unpaired.fa.gz.
+
+#### setting variables
+name=$1								# the species_name or the prefix of the genome file name
+runLastzChainNet=1    # run lastz and chainNet (default=yes)
+threads=30							# the number of cpu cores to use (default=1)
+identity=60           # identity threshold for HM_all_lastz_mThreads.pl (def=50)
+                      # normally, you do not need to change identity because the program will optimize it 
+maskFilter=85         # filter sequences in which XX% are soft-masked and Ns (default=85, recommand 80, 85, 90)
+redundantFilter=85    # filter sequences in which XX% are redundant, covered by alignment_length+Ns (default=80, recommand 80, 85, 90)
+
+###################################################################################################
+#### running
+if [ $# -eq 0 ]
+	then
+		echo
+		echo "Species name or the prefix of your genome file name is required !"
+		echo ""
+		echo "USAGE: $0 species_name"
+		echo
+		echo "Note that your genome sequence file should be"
+		echo "gzip compressed fasta file called assembly_name.fa.gz ."
+		echo 
+		exit 1
+	elif [ ! -f $1.fa.gz ]
+	then
+		echo
+		echo "$1.fa.gz is not found !"
+		echo 
+		exit 1	
+fi
+
+#### print out output file names
+echo
+echo ">>> Running command : $0 $1"
+echo 
+echo "These files/directories are going to be output :"
+echo "  optiNewScaffolds.seq (will be deleted)"
+echo "  unpaired.seq (will be deleted)"
+echo "  unpaired.optiNewScaffolds.result (will be deleted)"
+echo "  $name.${name}x.result/unpaired.tbest.net - net file for unpaired sequences"
+echo "  *** $name.${name}x.result/unpaired_refined.fa.gz - updated unpaired sequences"
+echo "log files:"
+echo "  _B4.un_initiation.log, _B.un_all_lastz.log, _B.un_axtChainRecipBestNet.log"
+echo "  _B4.unincorpRefiner.log"
+echo 
+
+#### ===========================================================
+#### refine the unpaired sequences
+#### ===========================================================
+
+perl ../bin/HM_unincorpRefiner.pl --Species $name ${name}x \
+  --runLastzChainNet=$runLastzChainNet --threads=$threads  \
+	--identity=$identity --maskFilter=$maskFilter            \
+	--redundantFilter=$redundantFilter --Force --Delete      \
+	1>_B4.unincorpRefiner.log 2>>_B4.unincorpRefiner.log
+
+mv -f _hm.un_initiation.log _B4.un_initiation.log
+mv -f _hm.un_all_lastz.log _B4.un_all_lastz.log
+mv -f _hm.un_axtChainRecipBestNet.log _B4.un_axtChainRecipBestNet.log
+
+

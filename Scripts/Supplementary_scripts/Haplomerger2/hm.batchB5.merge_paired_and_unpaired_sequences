@@ -1,0 +1,72 @@
+#### hm.batchB5.merge_paired_and_unpaired_sequences v1.50
+####
+#### This shell script is to output the reference/alternative haploid assemblies.
+
+#### setting variables
+name=$1								# the species_name or the prefix of the genome file name
+including_unpaired=1  # set to 1 (def), outputing
+											#   optiNewScaffold.fa.gz     + unpaired_refined.fa.gz as ${name}_ref.fa.gz
+											#   optiNewScaffold_alt.fa.gz + unpaired_refined.fa.gz as ${name}_alt.fa.gz
+											# set to 0, outputing
+											#   optiNewScaffold.fa.gz      as ${name}_ref.fa.gz    
+											#   optiNewScaffold_alt.fa.gz  as ${name}_alt.fa.gz 											
+
+
+###################################################################################################
+#### running
+if [ $# -eq 0 ]
+	then
+		echo
+		echo "Species name or the prefix of your genome file name is required !"
+		echo ""
+		echo "USAGE: $0 species_name"
+		echo
+		echo "Note that your genome sequence file should be"
+		echo "gzip compressed fasta file called assembly_name.fa.gz ."
+		echo 
+		exit 1
+	elif [ ! -f $1.fa.gz ]
+	then
+		echo
+		echo "$1.fa.gz is not found !"
+		echo 
+		exit 1	
+fi
+
+#### print out output file names
+echo
+echo ">>> Running command : $0 $1"
+echo 
+echo "These files/directories are going to be output :"
+if [ $including_unpaired -eq 0 ]
+	then
+		echo "  *** ${name}_ref.fa.gz - the reference haploid assembly   (unpaired_refined not included)"
+		echo "  *** ${name}_alt.fa.gz - the alternative haploid assembly (unpaired_refined not included)"	
+	else
+		echo "  *** ${name}_ref.fa.gz - the reference haploid assembly   (unpaired_refined included)"
+		echo "  *** ${name}_alt.fa.gz - the alternative haploid assembly (unpaired_refined included)"
+fi		
+echo "log files:"
+echo "  _B5.merge_paired_and_unpaired.log"
+echo 
+
+#### ===========================================================
+#### output the reference/alternative haploid assemblies
+#### ===========================================================
+
+if [ $including_unpaired -eq 0 ]
+	then
+	  cp ${name}.${name}x.result/optiNewScaffolds.fa.gz     ${name}_ref.fa.gz
+	  cp ${name}.${name}x.result/optiNewScaffolds_alt.fa.gz ${name}_alt.fa.gz
+		echo "${name}_ref.fa.gz - the reference haploid assembly   (unpaired_refined not included)" >_B5.merge_paired_and_unpaired.log
+		echo "${name}_alt.fa.gz - the alternative haploid assembly (unpaired_refined not included)" >>_B5.merge_paired_and_unpaired.log		
+	else
+	  gunzip -c ${name}.${name}x.result/optiNewScaffolds.fa.gz > ${name}.${name}x.result/optiNewScaffolds.fa
+	  gunzip -c ${name}.${name}x.result/optiNewScaffolds_alt.fa.gz > ${name}.${name}x.result/optiNewScaffolds_alt.fa
+	  gunzip -c ${name}.${name}x.result/unpaired_refined.fa.gz > ${name}.${name}x.result/unpaired_refined.fa
+	  cat ${name}.${name}x.result/optiNewScaffolds.fa     ${name}.${name}x.result/unpaired_refined.fa |gzip -c > ${name}_ref.fa.gz
+	  cat ${name}.${name}x.result/optiNewScaffolds_alt.fa ${name}.${name}x.result/unpaired_refined.fa |gzip -c > ${name}_alt.fa.gz
+	  rm -f ${name}.${name}x.result/*.fa
+		echo "${name}_ref.fa.gz - the reference haploid assembly   (unpaired_refined included)" >>_B5.merge_paired_and_unpaired.log
+		echo "${name}_alt.fa.gz - the alternative haploid assembly (unpaired_refined included)" >>_B5.merge_paired_and_unpaired.log	  	  	  
+fi	

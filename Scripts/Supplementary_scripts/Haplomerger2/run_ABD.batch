@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#### ===========================================================================
+#### IMPORTANT NOTE:
+#### For raw diploid assembly with >2000 scaffold sequences, 
+#### make sure to lift your system¡¯s openable file handle limit by invocating
+#### ¡°ulimit ¨Cn 655350¡± before running HM2 (root privilege required)!
+#### ===========================================================================
+
+#### ===========================================================================
+#### set the path to executables
+#### ===========================================================================
+#PATH=/path/to/perl/bin/:/path/to/chainNet/:/path/to/lastz/:/path/to/gapCloser/:/path/to/sspace/:$PATH
+echo $PATH
+
+#### ===========================================================================
+#### step 1: break the misjoins and output the new diploid assembly
+#### ===========================================================================
+#### default input:        ./{assembly_name}.fa.gz
+#### default final output: ./{assembly_name}_A.fa.gz
+
+./hm.batchA1.initiation_and_all_lastz  4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size
+./hm.batchA2.chainNet_and_netToMaf     4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size
+./hm.batchA3.misjoin_processing        4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size
+
+#### ===========================================================================
+#### step 2: separate/merge two alleles and output haploid assemblies
+#### ===========================================================================
+#### default input:        ./{assembly_name}_A.fa.gz
+#### default final output: ./{assembly_name}_A_ref.fa.gz
+#### default final output: ./{assembly_name}_A_alt.fa.gz
+
+./hm.batchB1.initiation_and_all_lastz             4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A
+./hm.batchB2.chainNet_and_netToMaf                4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A
+./hm.batchB3.haplomerger                          4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A
+./hm.batchB4.refine_unpaired_sequences            4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A
+./hm.batchB5.merge_paired_and_unpaired_sequences  4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A
+
+#### ===========================================================================
+#### step 3: further scaffold the obtained haploid assemblies
+#### ===========================================================================
+#### default input:        ./{assembly_name}_A_ref.fa.gz
+#### default final output: ./{assembly_name}_A_ref_C.fa.gz
+#### default final output: ./{assembly_name}_A_alt_C.fa.gz
+
+#./hm.batchC1.hierarchical_scaffolding                      your_assembly_name_A_ref
+#./hm.batchC2.update_reference_and_alternative_assemblies   your_assembly_name_A_ref
+
+#### ===========================================================================
+#### step 4: remove tandem errors from haploid assemblies
+#### ===========================================================================
+#### default input:        ./{assembly_name}_A_ref_C.fa.gz
+#### default final output: ./{assembly_name}_A_ref_C_D.fa.gz
+
+./hm.batchD1.initiation_and_all_lastz     4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A_ref
+./hm.batchD2.chainNet_and_netToMaf        4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A_ref
+./hm.batchD3.remove_tandem_assemblies     4_Pver_lib4_filteredDiscovar_ScaffCsar_Gapfilledlib4m50_size_A_ref
+
+#### ===========================================================================
+#### step 5: try to close Ngaps in haploid assemblies
+#### ===========================================================================
+#### default input:        ./{assembly_name}_A_ref_C_D.fa.gz
+#### default final output: ./{assembly_name}_A_ref_C_D_E.fa.gz
+
+#./hm.batchE1.wrapper_for_gapCloser_v1.12  your_assembly_name_A_ref_C_D

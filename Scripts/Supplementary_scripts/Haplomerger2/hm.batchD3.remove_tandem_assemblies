@@ -1,0 +1,74 @@
+#### hm.batchD3.remove_tandem_assemblies v1.50
+####
+#### This shell script invocate XHM_tandemAssemblyRemover.pl.
+
+
+#### setting variables
+name=$1								# the species_name or the prefix of the genome file name
+filterAli=2500        # filter out alignment block whose ali_len low than N (def=2500)
+runChainNet=1         # to run chainNet first (default=1, set to 0 to start from hm.tandem_assemblies)
+Delete=1              # delete directory selfOnly.nets/ after the script is finished (def=1, no)
+minLen=2500           # minimum alignment length for consideration of removing
+                      # (default=2500 bp, minimum=100 bp)
+maxInterval=15        # maximum interval allowed between tandom assembly (default=50(%) of the alignment length)
+                      # set to a large value like 10,000,000 to remove translocation-like mis-assemblies
+minCoverage=80        # ignore sequences whose alignment-coverage < N (def=66%)
+XvY=80                # the axis X to axis Y ratio; def=75 (%)
+noRerun=0             #                      
+
+###################################################################################################
+#### running
+if [ $# -eq 0 ]
+  then
+    echo
+    echo "Species name or the prefix of your genome file name is required !"
+    echo ""
+    echo "USAGE: $0 species_name"
+    echo
+    echo "Note that your genome sequence file should be"
+    echo "gzip compressed fasta file called assembly_name.fa.gz ."
+    echo 
+    exit 1
+  elif [ ! -f $1.fa.gz ]
+  then
+    echo
+    echo "$1.fa.gz is not found !"
+    echo 
+    exit 1  
+fi
+
+#### print out output file names
+echo
+echo ">>> Running command : $0 $1"
+echo 
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo
+echo "These files/directories are going to be output :"
+echo "  $name.${name}x.result/selfOnly.nets/*.net - store the self-self notrivial net files (deletable)"
+echo "  $name.${name}x.result/hm.tandem_assemblies - show tandem positions"
+echo "  *** ${name}_D.fa.gz - the new haploid genome assembly withf tandem mis-assemblies removed"
+echo " log files:"
+echo "  _D3.tandem_removal.log (including the info of removed seqeunces)"
+echo "  _D3.tandem_removal_excised_seq.fa (including the excised sequences)"
+echo
+
+#### ===========================================================
+#### remove tandems and output new haploid assembly
+#### ===========================================================
+
+perl ../bin/XHM_tandemAssemblyRemover.pl --Species $name ${name}x \
+  --filter=$filterAli         \
+  --runChainNet=$runChainNet  \
+  --minXversusY=$XvY          \
+  --minLen=$minLen            \
+  --maxInterval=$maxInterval  \
+  --minCoverage=$minCoverage  \
+  --noRerun=$noRerun          \
+  --Force                     \
+  --Delete=$Delete            \
+  1>_D3.tandem_removal.log 2>>_D3.tandem_removal_excised_seq.fa
+
+mv -f ${name}_rt.fa.gz ${name}_D.fa.gz  
+
+
