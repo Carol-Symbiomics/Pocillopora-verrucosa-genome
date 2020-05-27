@@ -188,19 +188,33 @@ grep ">" Pver25_db.gene_structures_post_PASA_updates.45243.gff3.prot.fasta | sed
 perl pasa_asmbls_to_training_set.extract_reference_orfs.pl Pver25_db.gene_structures_post_PASA_updates.45243.gff3 minProtLength=0 > Pver25_db.gene_structures_post_PASA_updates.45243.orfs
 
 # how many ORFs resulted
-grep -c -P "\tgene\t" *.orfs #26,634
+grep -c -P "\tgene\t" *.orfs #26,634 which includes the transcript isoforms
 
 # The prefix Pver and Pver_gene were added to the gff3 file using vim> Pver25_db.gene_structures_post_PASA_updates.45243.names.gff3
 
-# The protein sequence was extracted from the names.gff3 file as follows
-grep "#PROT" Pver25_db.gene_structures_post_PASA_updates.45243.names.gff3 | sed 's/#PROT />/g' | sed 's/\t/\n/g' > Pver25_db.gene_structures_post_PASA_updates.45243.gff3.prot.names.fasta
+# The aminoacids sequence was extracted from the gff3 file as follows
+grep "#PROT" Pver25_db.gene_structures_post_PASA_updates.45243.names.gff3 | sed 's/#PROT />/g' | sed 's/\t/\n/g' > Pver25_db.gene_structures_post_PASA_updates.45243.gff3.prot.names.faa
 
-# The .names.gff3 file was copied into a different folder cds_mrna_exons and the following Augustus perl script was used to extract the condingseq (nt)
+# The coding sequences (CDS) were extracted from the gff3 file using the Augustus perl script "getAnnoFasta.pl"
 perl getAnnoFasta.pl Pver25_db.gene_structures_post_PASA_updates.45243.names.gff3 --seqfile=5_Pver_lib4_filtered_HM2_ABD_size.fasta
-sed 's/>/>Pver_/g' Pver25_db.gene_structures_post_PASA_updates.45243.names3.codingseq > temp && mv temp Pver25_db.gene_structures_post_PASA_updates.45243.names3.codingseq
+sed 's/>/>Pver_/g' Pver25_db.gene_structures_post_PASA_updates.45243.names3.codingseq > Pver25_db.gene_structures_post_PASA_updates.45243.names3.codingseq.fna
+
+# The longest isoform was extracted for each gene model using an R script
+Rscript extracting_longest_isoform.R Pver25_db.gene_structures_post_PASA_updates.45243.gff3.prot.names.faa Pver25_db.gene_structures_post_PASA_updates.45243.names3.codingseq.fna 
+
+# To get the fasta sequences in ascending order according to the sequence name
+awk 'BEGIN{RS=">"} NR>1 {gsub("\n", "\t"); print ">"$0}' longest_isoform.fna \
+| sort -t ' ' -Vk1 \
+| awk '{sub("\t", "\n"); gsub("\t", ""); print $0}' > Pver_gene_structures_post_PASA_updates_longestisoform.fna
+
+awk 'BEGIN{RS=">"} NR>1 {gsub("\n", "\t"); print ">"$0}' longest_isoform.faa \
+| sort -t ' ' -Vk1 \
+| awk '{sub("\t", "\n"); gsub("\t", ""); print $0}' > Pver_gene_structures_post_PASA_updates_longestisoform.faa
+
+# The longest gene isoform was extracted from the gff3 file accordingly
 
 
-### 4. ASSESS COMPLETENESS OF THE PREDICTED GENE MODELS WITH BUSCO
+### 4. ASSESS COMPLETENESS OF THE PREDICTED GENE MODELS WITH BUSCO (OPTIONAL)
 
 # Run BUSCO in protein mode
 python2.7 run_BUSCO.py -i Pver25_db.gene_structures_post_PASA_updates.45243.gff3.prot.fasta -o Pver_GeneModels_BUSCO -m proteins -c 20 &>> 12_BUSCO_results_20191203.log
@@ -243,7 +257,7 @@ awk '$3==0 {print$0}' Alignment_stats.20191204 | wc -l # 3,196  Only 9.72% of th
 #90.27% of the Gene Models have RNAseq evidence
 
 
-### 5. COMPLETE ANNOTATION BY BLASTING GENE MODELS TO Swiss, trEMBL AND nr DATASETS
+### 6. COMPLETE ANNOTATION BY BLASTING GENE MODELS TO Swiss, trEMBL AND nr DATASETS
 
 # a) Build BLAST databases for swiss, TrEMBL and "nr" protein sequences
 
