@@ -42,7 +42,8 @@ Coral holobiont: refers to the complex symbiotic relationship between the cnidar
    - Spliced alignments of expressed transcript sequences were used to annotate the genome.
    - The best trasncripts were selected by filtering out those that were a) ambiguous, b) incomplete, c) have less than 3 exons, d) redundant and e) have repetitive elements.
    - Gene models were predicted using the set of transcripts described in the previous step.
-   - The completeness of the set of predicted gene models was evaluated.
+   - The longest isoform per gene model was extracted from aminoacid and nucleotide (CDS) sequences.
+   - The completeness of the set of predicted gene models (longest isoform) was evaluated.
    - The complete set of predicted proteins (including transcript spliced forms .t2) was hierarchically annotated using  SwissProt, TrEMBL and nr databases.  
    
 #### Transcriptome
