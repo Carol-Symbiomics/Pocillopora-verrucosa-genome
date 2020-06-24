@@ -1,7 +1,8 @@
 
 library(rhmmer)
-library(gplots)
+library(pheatmap)
 library(matrixStats)
+library(qvalue)
 
 setwd("~/Documents/Bioinformatics_scripts/R_scripts/Pver_genome/")
 
@@ -45,15 +46,14 @@ for(i in 1:nrow(dom.cnt)){Pdam.m = matrix(c(dom.cnt$Pver[i],nor_in$Pver[i],dom.c
 Pdam.m=lapply(1:nrow(dom.cnt), function(x) Pdam.m = matrix(c(dom.cnt$Pver[x],nor_in$Pver[x],dom.cnt$Pdam[x],nor_in$Pdam[x]), nrow=2))
 Pdam.f=lapply(Pdam.m, function(x) fisher.test(x))
 dom.cnt$Pdam.pval=lapply(1:nrow(dom.cnt), function(x) Pdam.f[[x]][["p.value"]])
-dom.cnt$Pdam.qval=p.adjust(dom.cnt$Pdam.pval, method = "fdr", n=nrow(dom.cnt))
+dom.cnt$Pdam.qval=qvalue(dom.cnt$Pdam.pval)$qvalue
 
 
 for(i in 1:nrow(dom.cnt)){Spis.m = matrix(c(dom.cnt$Pver[i],nor_in$Pver[i],dom.cnt$Spis[i],nor_in$Spis[i]), nrow=2)}
 Spis.m=lapply(1:nrow(dom.cnt), function(x) Spis.m = matrix(c(dom.cnt$Pver[x],nor_in$Pver[x],dom.cnt$Spis[x],nor_in$Spis[x]), nrow=2))
 Spis.f=lapply(Spis.m, function(x) fisher.test(x))
 dom.cnt$Spis.pval=lapply(1:nrow(dom.cnt), function(x) Spis.f[[x]][["p.value"]])
-dom.cnt$Spis.qval=p.adjust(dom.cnt$Spis.pval, method = "fdr", n=nrow(dom.cnt))
-
+dom.cnt$Spis.qval=qvalue(dom.cnt$Spis.pval)$qvalue
 
 message("Number of enriched domains in Pver-Pdam: ", nrow(subset(dom.cnt, Pdam.qval < 0.05))) ## 86
 message("Number of enriched domains in Pver-Spis: ", nrow(subset(dom.cnt, Spis.qval < 0.05))) ## 70
@@ -63,7 +63,7 @@ enriched_domains=rownames(subset(dom.cnt, Pdam.qval < 0.05 | Spis.qval < 0.05))
 ###########
 # Heatmap #
 ###########
-library(pheatmap)
+
 all.f=subset(all.n, rownames(all.n) %in% enriched_domains)
 hp_in=as.matrix(all.f[order(all.f$Pver,decreasing = TRUE),])
 
@@ -72,3 +72,4 @@ pdf("Domain_heatmaps_enriched.pdf", width = 8, height =15, pointsize = 6)
 #heatmap.2(hp_in, scale = "row", key = F, Rowv=T, dendrogram = "none",  density.info = "none", trace = "none",  cexRow=0.5, cexCol=0.8, margins=c(7,7), offsetRow=1, col=colorRampPalette(c("navy", "white", "firebrick3"))(50))
 out <-pheatmap(hp_in, color = colorRampPalette(c("navy", "white", "firebrick3"))(50), angle_col = "0",  scale = "row", cluster_col = FALSE)
 dev.off()
+
