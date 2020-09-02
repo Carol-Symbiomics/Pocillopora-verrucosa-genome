@@ -4,7 +4,7 @@ This repository contains all the scripts used for the genome assembly, filtering
 The scripts for the transcriptome assembly and filtering of *Pocillopora verrucosa* are also available in this repository.
 
 <p align="middle"> 
-<img src="Images/Pverrucosa-colony_opt.png" width="300"/> <img src="Images/Pverrucosa-closeup_opt.png" width="300"/>
+<img src="Images/Pver_genome_GBE.png" width="800"/>
 </p>
 
 ## Summary
