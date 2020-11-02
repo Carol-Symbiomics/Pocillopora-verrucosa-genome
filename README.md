@@ -1,6 +1,6 @@
 # The genome of the cauliflower coral *Pocillopora verrucosa*
 
-*Manuscript reference*: Carol Buitrago-López, Kiruthiga G Mariappan, Anny Cardenas, Hagen M Gegner, Christian R Voolstra, The genome of the cauliflower coral Pocillopora verrucosa, *Genome Biology and Evolution*, , evaa184, [[DOI: 10.1093/gbe/evaa184](https://doi.org/10.1093/gbe/evaa184)]
+*Manuscript reference*: Buitrago-López, C., Mariappan, K. G., Cárdenas, A., Gegner, H. M., & Voolstra, C. R. (2020). The genome of the cauliflower coral Pocillopora verrucosa, *Genome Biology and Evolution*, 12(10), 1911–1917. [[DOI: 10.1093/gbe/evaa184](https://doi.org/10.1093/gbe/evaa184)]
 
 [![Manuscript](Images/Pver_manuscript_GBE.png)](https://doi.org/10.1093/gbe/evaa184)
 
