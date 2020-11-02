@@ -1,5 +1,9 @@
 # The genome of the cauliflower coral *Pocillopora verrucosa*
 
+*Manuscript reference*: Carol Buitrago-López, Kiruthiga G Mariappan, Anny Cardenas, Hagen M Gegner, Christian R Voolstra, The genome of the cauliflower coral Pocillopora verrucosa, *Genome Biology and Evolution*, , evaa184, [[DOI: 10.1093/gbe/evaa184](https://doi.org/10.1093/gbe/evaa184)]
+
+[![Manuscript](Images/Pver_manuscript_GBE.png)](https://doi.org/10.1093/gbe/evaa184)
+
 This repository contains all the scripts used for the genome assembly, filtering and annotation of the cauliflower coral *Pocillopora verrucosa*. 
 The scripts for the transcriptome assembly and filtering of *Pocillopora verrucosa* are also available in this repository.
 
